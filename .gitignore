@@ -9,3 +9,12 @@
 
 # rspec failure tracking
 .rspec_status
+
+/Gemfile.lock
+*.gem
+.vs
+*.code-workspace
+.bundle
+.ruby-version
+.DS_Store
+.idea/
