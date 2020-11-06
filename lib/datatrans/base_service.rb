@@ -5,12 +5,6 @@ module Datatrans
   class BaseService
     attr_accessor :service, :version
 
-    class << self
-      def to_camel_case(method_name)
-        method_name.to_s.gsub(/_./) { |x| x[1].upcase }
-      end
-    end
-
     def initialize(client, version, service, methods)
       @client = client
       @version = version
@@ -23,9 +17,10 @@ module Datatrans
     def define_actions(methods)
       methods.each do |method|
         define_singleton_method method.dig(:name) do |request = {}, headers = {}|
+          transaction_id = request.delete(:transactionId)
           @client.send_request(
             verb: method.dig(:verb), service: @service, request: request, headers: headers, version: @version,
-            action: self.class.to_camel_case(method.dig(:name))
+            action: method.dig(:name), transaction_id: transaction_id
           )
         end
       end
