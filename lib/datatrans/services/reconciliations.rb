@@ -11,7 +11,7 @@ module Datatrans
       ].freeze
 
       def initialize(client, version = DEFAULT_VERSION)
-        super(client, version, 'Reconciliations', METHODS)
+        super(client: client, methods: METHODS, service: 'Reconciliations', version: version)
       end
     end
   end

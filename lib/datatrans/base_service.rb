@@ -5,7 +5,7 @@ module Datatrans
   class BaseService
     attr_accessor :service, :version
 
-    def initialize(client, version, service, methods)
+    def initialize(client:, methods:, service:, version:)
       @client = client
       @version = version
       @service = service
@@ -19,8 +19,8 @@ module Datatrans
         define_singleton_method method.dig(:name) do |request = {}, headers = {}|
           id = request.delete(:transactionId) || request.delete(:alias)
           @client.send_request(
-            verb: method.dig(:verb), service: @service, request: request, headers: headers, version: @version,
-            action: method.dig(:name), id: id
+            action: method.dig(:name), id: id, headers: headers, request: request, service: @service,
+            verb: method.dig(:verb), version: @version
           )
         end
       end
