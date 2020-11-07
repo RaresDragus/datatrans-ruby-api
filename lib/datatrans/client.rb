@@ -47,12 +47,15 @@ module Datatrans
         "#{endpoint_url_base(service)}/#{action}"
       elsif service == 'Transactions' && %i[secure_fields].include?(action)
         "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{action.to_s.gsub(/_./) { |x| x[1].upcase }}"
-      elsif %w[Transactions Aliases].include?(service) && %i[status update_amount delete].include?(action)
+      elsif %w[Aliases Transactions].include?(service) && %i[status update_amount delete].include?(action)
         "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{id}"
       elsif service == 'Transactions' && %i[authorize_with_transaction settle cancel].include?(action)
         "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{id}/#{action.to_s.split('_').first}"
-      elsif service == 'Transactions' && %i[authorize validate credit].include?(action)
+      elsif %w[Reconciliations Transactions].include?(service) && %i[authorize validate credit sales].include?(action)
         "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{action}"
+      elsif service == 'Reconciliations' && action == 'sales_bulk'
+        split_action = action.to_s.split('_')
+        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{split_action.first}/#{split_action.last}"
       else
         "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}"
       end
@@ -63,7 +66,7 @@ module Datatrans
       case service
       when 'HealthCheck'
         url = "https://api#{env_url}.datatrans.com/upp"
-      when 'Transactions'
+      when 'Aliases' || 'Reconciliations' || 'Transactions'
         url = "https://api#{env_url}.datatrans.com"
       else
         raise ArgumentError, 'Invalid service specified'
@@ -93,7 +96,7 @@ module Datatrans
       end
     end
 
-    %i[aliases health_check transactions].each do |method|
+    %i[aliases health_check reconciliations transactions].each do |method|
       define_method method do
         instance_variable_set(
           "@#{method}", "Datatrans::Services::#{method.to_s.camelcase}".constantize.send(:new, self)
