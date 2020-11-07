@@ -18,7 +18,7 @@ module Datatrans
     end
 
     def send_request(**args)
-      map_result(
+      ResponseMapper.build(
         *call_api(
           EndpointUrlBuilder.build(
             action: args.dig(:action), env: @env, id: args.dig(:id),
@@ -58,17 +58,6 @@ module Datatrans
         faraday.headers['User-Agent'] = Datatrans::NAME + '/' + Datatrans::VERSION
         faraday.basic_auth(@user, @password)
         headers.map { |key, value| faraday.headers[key] = value }
-      end
-    end
-
-    def map_result(response, request_data)
-      case response.status
-      when 401
-        raise StandardError, "Invalid API authentication: #{request_data}"
-      when 403
-        raise StandardError, "Missing user permissions: #{request_data}"
-      else
-        Result.new(response.body, response.headers, response.status)
       end
     end
   end

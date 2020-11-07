@@ -27,20 +27,20 @@ module Datatrans
     private
 
     def endpoint_url_base
-      @endpoint_url_base ||= case @service
-                             when 'HealthCheck'
-                               "https://api#{@env_subdomain}.datatrans.com/upp"
-                             when 'Aliases', 'Reconciliations', 'Transactions'
-                               "https://api#{@env_subdomain}.datatrans.com"
-                             else
-                               raise ArgumentError, 'Invalid service specified'
-                             end
+      case @service
+      when 'HealthCheck'
+        "https://api#{@env_subdomain}.datatrans.com/upp"
+      when 'Aliases', 'Reconciliations', 'Transactions'
+        "https://api#{@env_subdomain}.datatrans.com"
+      else
+        raise ArgumentError, 'Invalid service specified'
+      end
     end
 
     def path
       return path_for_secure_fields if secure_fields?
-      return path_for_sales_bulk if sales_bulk?
-      return @id if path_needs_id?
+      return path_for_sales_bulk    if sales_bulk?
+      return @id                    if path_needs_id?
 
       custom_path
     end
