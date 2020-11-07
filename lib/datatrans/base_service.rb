@@ -17,10 +17,10 @@ module Datatrans
     def define_actions(methods)
       methods.each do |method|
         define_singleton_method method.dig(:name) do |request = {}, headers = {}|
-          transaction_id = request.delete(:transactionId)
+          id = request.delete(:transactionId) || request.delete(:alias)
           @client.send_request(
             verb: method.dig(:verb), service: @service, request: request, headers: headers, version: @version,
-            action: method.dig(:name), transaction_id: transaction_id
+            action: method.dig(:name), id: id
           )
         end
       end

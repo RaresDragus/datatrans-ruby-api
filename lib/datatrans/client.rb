@@ -17,6 +17,47 @@ module Datatrans
       @env = env
     end
 
+    def send_request(**args)
+      result = call_api(
+        endpoint_url(
+          service: args.dig(:service), action: args.dig(:action), version: args.dig(:version),
+          id: args.dig(:id)
+        ),
+        args
+      )
+      map_result(*result)
+    end
+
+    private
+
+    def call_api(url, args)
+      request = args.dig(:request)
+      request_data = ((JSON.parse(request) if request.is_a?(String)) || request).to_json
+      begin
+        response = connection(url, args.dig(:headers)).send(args.dig(:verb)) { |req| req.body = request_data }
+      rescue Faraday::ConnectionFailed => e
+        raise e, "Connection to #{url} failed"
+      end
+
+      [response, request_data]
+    end
+
+    def endpoint_url(service:, action:, version:, id: nil)
+      if service == 'HealthCheck'
+        "#{endpoint_url_base(service)}/#{action}"
+      elsif service == 'Transactions' && %i[secure_fields].include?(action)
+        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{action.to_s.gsub(/_./) { |x| x[1].upcase }}"
+      elsif %w[Transactions Aliases].include?(service) && %i[status update_amount delete].include?(action)
+        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{id}"
+      elsif service == 'Transactions' && %i[authorize_with_transaction settle cancel].include?(action)
+        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{id}/#{action.to_s.split('_').first}"
+      elsif service == 'Transactions' && %i[authorize validate credit].include?(action)
+        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{action}"
+      else
+        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}"
+      end
+    end
+
     def endpoint_url_base(service)
       env_url = @env == :live ? '' : '.sandbox'
       case service
@@ -29,45 +70,6 @@ module Datatrans
       end
 
       url
-    end
-
-    def endpoint_url(service:, action:, version:, transaction_id: nil)
-      if service == 'HealthCheck'
-        "#{endpoint_url_base(service)}/#{action}"
-      elsif service == 'Transaction' && %i[secure_fields].include?(action)
-        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{action.to_s.gsub(/_./) { |x| x[1].upcase }}"
-      elsif service == 'Transaction' && %i[status update_amount].include?(action)
-        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{transaction_id}"
-      elsif service == 'Transaction' && %i[authorize_with_transaction settle cancel].include?(action)
-        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{transaction_id}/#{action.to_s.split('_').first}"
-      elsif service == 'Transaction' && %i[authorize validate credit].include?(action)
-        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}/#{action}"
-      else
-        "#{endpoint_url_base(service)}/v#{version}/#{service.downcase}"
-      end
-    end
-
-    def send_request(**args)
-      result = call_api(
-        endpoint_url(
-          service: args.dig(:service), action: args.dig(:action), version: args.dig(:version),
-          transaction_id: args.dig(:transaction_id)
-        ),
-        args
-      )
-      map_result(*result)
-    end
-
-    def call_api(url, args)
-      request = args.dig(:request)
-      request_data = ((JSON.parse(request) if request.is_a?(String)) || request).to_json
-      begin
-        response = connection(url, args.dig(:headers)).send(args.dig(:verb)) { |req| req.body = request_data }
-      rescue Faraday::ConnectionFailed => e
-        raise e, "Connection to #{url} failed"
-      end
-
-      [response, request_data]
     end
 
     def connection(url, headers)
@@ -91,7 +93,7 @@ module Datatrans
       end
     end
 
-    %i[health_check transactions].each do |method|
+    %i[aliases health_check transactions].each do |method|
       define_method method do
         instance_variable_set(
           "@#{method}", "Datatrans::Services::#{method.to_s.camelcase}".constantize.send(:new, self)
