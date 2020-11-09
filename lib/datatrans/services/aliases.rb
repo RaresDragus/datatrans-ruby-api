@@ -10,6 +10,9 @@ module Datatrans
         { name: :convert, verb: :post   }
       ].freeze
 
+      # @param [Datatrans::Client] client The library client
+      # @param [Integer] version The version for the endpoint
+      # @return [Integer] The new instance
       def initialize(client, version = DEFAULT_VERSION)
         super(client: client, methods: METHODS, service: 'Aliases', version: version)
       end

@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'factory_bot'
   spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency 'yard'
 end

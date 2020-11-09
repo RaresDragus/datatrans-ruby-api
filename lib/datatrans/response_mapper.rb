@@ -23,7 +23,7 @@ module Datatrans
       when 403
         raise StandardError, "Missing user permissions: #{@params}"
       else
-        Result.new(header: response.headers, response: response.body, status: response.status)
+        Result.new(headers: response.headers, response: response.body, status: response.status)
       end
     end
   end

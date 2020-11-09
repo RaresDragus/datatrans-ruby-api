@@ -5,11 +5,15 @@ require 'faraday'
 require 'json'
 
 module Datatrans
-  # Model wraps the Datatrans Result
+  # Model wraps the Datatrans Client
   class Client
-    def initialize(user: nil, password: nil, env: :live)
-      @user = user
-      @password = password
+    # @param [String] merchant_id The merchant id
+    # @param [String] merchant_password The merchant password
+    # @param [Symbol] env The environment (live or test)
+    # @return [Datatrans::Client] The new instance
+    def initialize(merchant_id: nil, merchant_password: nil, env: :live)
+      @merchant_id = merchant_id
+      @merchant_password = merchant_password
       unless %i[live test].include? env
         raise ArgumentError, "Invalid value for Client.env: '#{env}'' - must be one of [:live, :test]"
       end
@@ -17,6 +21,8 @@ module Datatrans
       @env = env
     end
 
+    # @param [Hash] args The attributes for the new request
+    # @return [Datatrans::Result|Datatrans::Error] The result of the request
     def send_request(**args)
       ResponseMapper.build(
         *call_api(
@@ -38,6 +44,9 @@ module Datatrans
 
     private
 
+    # @param [String] url The url for the new request
+    # @param [Hash] args The attributes for the new request
+    # @return [Array<Faraday::Response, Hash>] The Faraday response and the payload which was sent
     def call_api(url, args)
       request = args[:request]
       request_data = ((JSON.parse(request) if request.is_a?(String)) || request).to_json
@@ -50,12 +59,15 @@ module Datatrans
       [response, request_data]
     end
 
+    # @param [String] url The url for the new connection
+    # @param [Hash] headers The headers for the new connection
+    # @return [Faraday] The new Faraday instance
     def connection(url, headers)
       Faraday.new(url: url) do |faraday|
         faraday.adapter Faraday.default_adapter
         faraday.headers['Content-Type'] = 'application/json'
         faraday.headers['User-Agent'] = "#{Datatrans::NAME}/#{Datatrans::VERSION}"
-        faraday.basic_auth(@user, @password)
+        faraday.basic_auth(@merchant_id, @merchant_password)
         headers.map { |key, value| faraday.headers[key] = value }
       end
     end
