@@ -34,6 +34,14 @@ module Datatrans
       )
     end
 
+    # aliases
+    # @return [Datatrans::Services::Aliases] New instance for aliases
+    # health_check
+    # @return [Datatrans::Services::HealthCheck] New instance for health check
+    # reconciliations
+    # @return [Datatrans::Services::Reconciliations] New instance for reconciliations
+    # transactions
+    # @return [Datatrans::Services::Transactions] New instance for transactions
     %i[aliases health_check reconciliations transactions].each do |method|
       define_method method do
         instance_variable_set(

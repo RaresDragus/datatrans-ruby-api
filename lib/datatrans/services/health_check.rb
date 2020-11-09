@@ -4,7 +4,6 @@ module Datatrans
   module Services
     # Model wraps the Datatrans Health Check Service
     class HealthCheck < BaseService
-
       private
 
       # @return [Array<Hash>] methods Array of actions and verbs used for requests

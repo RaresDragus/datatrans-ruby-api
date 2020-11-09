@@ -4,12 +4,11 @@ module Datatrans
   module Services
     # Model wraps the Datatrans Aliases Service
     class Aliases < BaseService
-
       private
 
       # @return [Array<Hash>] methods Array of actions and verbs used for requests
       def methods
-        [{ name: :delete,  verb: :delete }, { name: :convert, verb: :post }]
+        [{ name: :delete, verb: :delete }, { name: :convert, verb: :post }]
       end
     end
   end

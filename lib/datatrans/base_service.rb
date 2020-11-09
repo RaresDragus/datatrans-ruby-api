@@ -24,7 +24,7 @@ module Datatrans
     def define_actions
       methods.each do |method|
         define_singleton_method method[:name] do |request = {}, headers = {}|
-          id = request.delete(:transactionId) || request.delete(:alias)
+          id = request.delete(:id) || request.delete(:alias)
           @client.send_request(
             action: method[:name], id: id, headers: headers, request: request, service: self.class.name.demodulize,
             verb: method[:verb], version: @version
