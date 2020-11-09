@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Datatrans API Library for Ruby.'
   spec.homepage      = 'https://www.datatrans.ch'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.1.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.4.0')
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/RaresDragus/datatrans-ruby-api'
@@ -25,8 +25,10 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'activesupport'
   spec.add_dependency 'faraday'
 
-  spec.add_development_dependency 'activesupport'
   spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'factory_bot'
+  spec.add_development_dependency 'rubocop'
 end

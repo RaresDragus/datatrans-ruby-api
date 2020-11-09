@@ -21,8 +21,7 @@ module Datatrans
       ResponseMapper.build(
         *call_api(
           EndpointUrlBuilder.build(
-            action: args.dig(:action), env: @env, id: args.dig(:id),
-            service: args.dig(:service), version: args.dig(:version)
+            action: args[:action], env: @env, id: args[:id], service: args[:service], version: args[:version]
           ),
           args
         )
@@ -40,10 +39,10 @@ module Datatrans
     private
 
     def call_api(url, args)
-      request = args.dig(:request)
+      request = args[:request]
       request_data = ((JSON.parse(request) if request.is_a?(String)) || request).to_json
       begin
-        response = connection(url, args.dig(:headers)).send(args.dig(:verb)) { |req| req.body = request_data }
+        response = connection(url, args[:headers]).send(args[:verb]) { |req| req.body = request_data }
       rescue Faraday::ConnectionFailed => e
         raise e, "Connection to #{url} failed"
       end
@@ -55,7 +54,7 @@ module Datatrans
       Faraday.new(url: url) do |faraday|
         faraday.adapter Faraday.default_adapter
         faraday.headers['Content-Type'] = 'application/json'
-        faraday.headers['User-Agent'] = Datatrans::NAME + '/' + Datatrans::VERSION
+        faraday.headers['User-Agent'] = "#{Datatrans::NAME}/#{Datatrans::VERSION}"
         faraday.basic_auth(@user, @password)
         headers.map { |key, value| faraday.headers[key] = value }
       end

@@ -12,12 +12,13 @@ module Datatrans
     end
 
     def initialize(args)
-      @action = args.dig(:action)
-      @env = args.dig(:env)
+      @action = args[:action]
+      @env = args[:env]
       @env_subdomain = @env == :live ? '' : '.sandbox'
-      @id = args.dig(:id)
-      @service = args.dig(:service)
-      @version = args.dig(:version)
+      @id = args[:id]
+      @service = args[:service]
+      @version = args[:version]
+      raise ArgumentError, 'Invalid id specified' if @id.blank? && action_requires_id?
     end
 
     def build
@@ -25,6 +26,12 @@ module Datatrans
     end
 
     private
+
+    def action_requires_id?
+      %w[Aliases Transactions].include?(@service) &&
+        %i[authorize_with_transaction cancel credit_with_transaction delete
+           status settle update_amount].include?(@action)
+    end
 
     def endpoint_url_base
       case @service
@@ -38,11 +45,13 @@ module Datatrans
     end
 
     def path
-      return path_for_secure_fields if secure_fields?
-      return path_for_sales_bulk    if sales_bulk?
-      return @id                    if path_needs_id?
+      return path_for_secure_fields                    if secure_fields?
+      return path_for_sales_bulk                       if sales_bulk?
+      return @id                                       if path_with_id_only?
+      return @action                                   if path_with_action_only?
+      return "#{@id}/#{@action.to_s.split('_').first}" if custom_member_path?
 
-      custom_path
+      ''
     end
 
     def secure_fields?
@@ -62,18 +71,16 @@ module Datatrans
       "#{split_action.first}/#{split_action.last}"
     end
 
-    def path_needs_id?
+    def path_with_id_only?
       %w[Aliases Transactions].include?(@service) && %i[status update_amount delete].include?(@action)
     end
 
-    def custom_path
-      if @service == 'Transactions' && %i[authorize_with_transaction settle cancel].include?(@action)
-        "#{@id}/#{@action.to_s.split('_').first}"
-      elsif %w[Reconciliations Transactions].include?(@service) && %i[authorize validate credit sales].include?(@action)
-        @action
-      else
-        ''
-      end
+    def path_with_action_only?
+      %w[Reconciliations Transactions].include?(@service) && %i[authorize validate credit sales].include?(@action)
+    end
+
+    def custom_member_path?
+      @service == 'Transactions' && %i[authorize_with_transaction settle cancel].include?(@action)
     end
   end
 end
