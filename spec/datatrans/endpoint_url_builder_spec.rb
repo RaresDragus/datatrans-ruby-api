@@ -14,7 +14,7 @@ RSpec.describe Datatrans::EndpointUrlBuilder do
     it 'returns the correct url for Transactions init' do
       expect(
         described_class.build(action: :init, env: :live, service: 'Transactions', version: 1)
-      ).to eq('https://api.datatrans.com/v1/transactions/')
+      ).to eq('https://api.datatrans.com/v1/transactions')
     end
 
     it 'returns the correct url for Transactions authorize' do
@@ -102,7 +102,7 @@ RSpec.describe Datatrans::EndpointUrlBuilder do
         described_class.build(
           action: :convert, env: :live, service: 'Aliases', version: 1
         )
-      ).to eq('https://api.datatrans.com/v1/aliases/')
+      ).to eq('https://api.datatrans.com/v1/aliases')
     end
 
     it 'returns the correct url for Reconciliations sales' do

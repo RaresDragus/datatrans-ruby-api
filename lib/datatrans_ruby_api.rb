@@ -3,6 +3,7 @@
 require_relative 'datatrans/base_service'
 require_relative 'datatrans/client'
 require_relative 'datatrans/endpoint_url_builder'
+require_relative 'datatrans/errors'
 require_relative 'datatrans/response_mapper'
 require_relative 'datatrans/result'
 require_relative 'datatrans/version'

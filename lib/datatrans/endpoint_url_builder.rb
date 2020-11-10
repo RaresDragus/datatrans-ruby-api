@@ -17,8 +17,7 @@ module Datatrans
     # @return [Datatrans::EndpointUrlBuilder] The new instance
     def initialize(args)
       @action = args[:action]
-      @env = args[:env]
-      @env_subdomain = @env == :live ? '' : '.sandbox'
+      @env_subdomain = args[:env] == :live ? '' : '.sandbox'
       @id = args[:id]
       @service = args[:service]
       @version = args[:version]
@@ -29,7 +28,8 @@ module Datatrans
 
     # @return [String] The result of the Endpoint Url Builder
     def build
-      "#{endpoint_url_base}/#{@service == 'HealthCheck' ? @action : "v#{@version}/#{@service.downcase}/#{path}"}"
+      path_string = path.nil? ? '' : "/#{path}"
+      "#{endpoint_url_base}/#{@service == 'HealthCheck' ? @action : "v#{@version}/#{@service.downcase}#{path_string}"}"
     end
 
     private
@@ -62,7 +62,7 @@ module Datatrans
     # path_with_collection_only
     # @return [String] The path with collection only (eg. authorize => authorize)
     def define_helpers
-      methods.each do |method|
+      helper_methods.each do |method|
         define_singleton_method ":path_with_#{method[:name]}?" do
           method[:condition]
         end
@@ -76,7 +76,7 @@ module Datatrans
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/MethodLength
     # @return [Array<Hash>] Array of name, condition, and value used for building the paths
-    def methods
+    def helper_methods
       [
         {
           name: :special_camelcase,
@@ -122,13 +122,13 @@ module Datatrans
       end
     end
 
-    # @return [String] The endpoint path
+    # @return [String|NilClass] The endpoint's path
     def path
-      methods.map { |method| method[:name] }.each do |method_name|
+      helper_methods.map { |method| method[:name] }.each do |method_name|
         return send(":path_with_#{method_name}") if send(":path_with_#{method_name}?")
       end
 
-      ''
+      nil
     end
   end
 end

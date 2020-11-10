@@ -7,7 +7,7 @@ module Datatrans
       private
 
       # @return [Array<Hash>] methods Array of actions and verbs used for requests
-      def methods
+      def service_methods
         [{ name: :delete, verb: :delete }, { name: :convert, verb: :post }]
       end
     end

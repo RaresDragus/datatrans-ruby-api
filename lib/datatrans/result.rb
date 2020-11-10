@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'active_support/core_ext/hash/indifferent_access'
 require 'json'
 
 module Datatrans
@@ -19,8 +20,12 @@ module Datatrans
     # @param [Integer|NilClass] status The status code received from Faraday::Response
     # @return [Datatrans::Result] New instance
     def initialize(headers:, response:, status:)
-      @headers = JSON.parse(headers.to_json)
-      @response = JSON.parse([response].to_json).first
+      @headers = ActiveSupport::HashWithIndifferentAccess.new(JSON.parse(headers.to_json))
+      @response = ActiveSupport::HashWithIndifferentAccess.new(JSON.parse(response))
+      @status = status
+    rescue JSON::ParserError
+      @headers = headers
+      @response = response
       @status = status
     end
   end

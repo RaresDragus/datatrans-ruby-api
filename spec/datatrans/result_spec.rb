@@ -11,7 +11,7 @@ RSpec.describe Datatrans::Result do
                '"x-xss-protection": "1; mode=block", '\
                '"location": "https://pay.sandbox.datatrans.com/v1/start/201110082708737796", '\
                '"correlation-id": "2eff0e4e-c9c2-439a-8cc7-8d05908b18ab"',
-      response: '"transactionId": "201110082708737796"',
+      response: { transactionId: '201110082708737796' }.to_json,
       status: 201
     )
   end

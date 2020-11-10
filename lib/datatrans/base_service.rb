@@ -17,12 +17,12 @@ module Datatrans
     private
 
     # @return[Nothing] method that needs to be implemented in the descendant classes
-    def methods
+    def service_methods
       raise NotImplementedError, "#{__method__} needs to be overridden in descendant class."
     end
 
     def define_actions
-      methods.each do |method|
+      service_methods.each do |method|
         define_singleton_method method[:name] do |request = {}, headers = {}|
           id = request.delete(:id) || request.delete(:alias)
           @client.send_request(
