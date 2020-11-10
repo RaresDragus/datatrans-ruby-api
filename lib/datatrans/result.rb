@@ -14,7 +14,7 @@ module Datatrans
   class Result
     attr_reader :headers, :response, :status
 
-    # @param [Hash] headers The headers received from Faraday::Response
+    # @param [String] headers The headers received from Faraday::Response
     # @param [String|NilClass] response The body received from Faraday::Response
     # @param [Integer|NilClass] status The status code received from Faraday::Response
     # @return [Datatrans::Result] New instance

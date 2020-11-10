@@ -7,6 +7,8 @@ require 'json'
 module Datatrans
   # Model wraps the Datatrans Client
   class Client
+    attr_accessor :merchant_id, :merchant_password, :env
+
     # @param [String] merchant_id The merchant id
     # @param [String] merchant_password The merchant password
     # @param [Symbol] env The environment (live or test)
@@ -14,9 +16,7 @@ module Datatrans
     def initialize(merchant_id: nil, merchant_password: nil, env: :live)
       @merchant_id = merchant_id
       @merchant_password = merchant_password
-      unless %i[live test].include? env
-        raise ArgumentError, "Invalid value for Client.env: '#{env}'' - must be one of [:live, :test]"
-      end
+      raise ArgumentError, "Invalid env specified: '#{env}'" unless %i[live test].include? env
 
       @env = env
     end

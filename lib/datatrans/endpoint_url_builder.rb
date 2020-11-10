@@ -22,7 +22,7 @@ module Datatrans
       @id = args[:id]
       @service = args[:service]
       @version = args[:version]
-      raise ArgumentError, 'Invalid id specified' if @id.blank? && action_requires_id?
+      raise ArgumentError, "Invalid id specified: '#{@id}'" if @id.blank? && action_requires_id?
 
       define_helpers
     end
@@ -118,7 +118,7 @@ module Datatrans
       when 'Aliases', 'Reconciliations', 'Transactions'
         "https://api#{@env_subdomain}.datatrans.com"
       else
-        raise ArgumentError, 'Invalid service specified'
+        raise ArgumentError, "Invalid service specified: '#{@service}'"
       end
     end
 
