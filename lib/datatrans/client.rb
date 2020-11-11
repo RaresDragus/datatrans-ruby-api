@@ -7,41 +7,41 @@ require 'json'
 module Datatrans
   # Model wraps the Datatrans Client
   class Client
-    attr_accessor :merchant_id, :merchant_password, :env
+    attr_accessor :env, :merchant_id, :merchant_password
 
+    # @param [Symbol] env The environment (live or test)
     # @param [String] merchant_id The merchant id
     # @param [String] merchant_password The merchant password
-    # @param [Symbol] env The environment (live or test)
-    # @return [Datatrans::Client] The new instance
-    def initialize(merchant_id: nil, merchant_password: nil, env: :live)
-      @merchant_id = merchant_id
-      @merchant_password = merchant_password
-      raise ArgumentError, "Invalid env specified: '#{env}'" unless %i[live test].include? env
+    # @return [Datatrans::Client] A new instance
+    def initialize(env: :live, merchant_id: nil, merchant_password: nil)
+      raise ArgumentError, "Invalid env specified: '#{env}'" unless %i[live test].include?(env)
 
       @env = env
+      @merchant_id = merchant_id
+      @merchant_password = merchant_password
     end
 
     # @param [Hash] args The attributes for the new request
-    # @return [Datatrans::Result|Datatrans::Error] The result of the request
+    # @return [Datatrans::Result|Datatrans::DatatransError] The result of the request
     def send_request(**args)
       ResponseMapper.build(
-        *call_api(
+        *call(
+          args,
           EndpointUrlBuilder.build(
             action: args[:action], env: @env, id: args[:id], service: args[:service], version: args[:version]
-          ),
-          args
+          )
         )
       )
     end
 
     # aliases
-    # @return [Datatrans::Services::Aliases] New instance for aliases
+    # @return [Datatrans::Services::Aliases] A new Aliases Service instance
     # health_check
-    # @return [Datatrans::Services::HealthCheck] New instance for health check
+    # @return [Datatrans::Services::HealthCheck] A new Health Check Service instance
     # reconciliations
-    # @return [Datatrans::Services::Reconciliations] New instance for reconciliations
+    # @return [Datatrans::Services::Reconciliations] A new Reconciliations Service instance
     # transactions
-    # @return [Datatrans::Services::Transactions] New instance for transactions
+    # @return [Datatrans::Services::Transactions] A new Transactions Service instance
     %i[aliases health_check reconciliations transactions].each do |method|
       define_method method do
         instance_variable_set(
@@ -52,30 +52,31 @@ module Datatrans
 
     private
 
-    # @param [String] url The url for the new request
     # @param [Hash] args The attributes for the new request
-    # @return [Array<Faraday::Response, Hash>] The Faraday response and the payload which was sent
-    def call_api(url, args)
+    # @param [String] url The url for the new request
+    # @return [Array<Hash, Faraday::Response>] The payload which was sent and the response
+    def call(args, url)
       request = args[:request]
       request_data = ((JSON.parse(request) if request.is_a?(String)) || request).to_json
       begin
-        response = connection(url, args[:headers]).send(args[:verb]) { |req| req.body = request_data }
+        response = connection(args[:headers], url).send(args[:verb]) { |req| req.body = request_data }
       rescue Faraday::ConnectionFailed => e
         raise e, "Connection to #{url} failed"
       end
 
-      [response, request_data]
+      [request_data, response]
     end
 
-    # @param [String] url The url for the new connection
     # @param [Hash] headers The headers for the new connection
-    # @return [Faraday] The new Faraday instance
-    def connection(url, headers)
+    # @param [String] url The url for the new connection
+    # @return [Faraday] A new Faraday instance
+    def connection(headers, url)
       Faraday.new(url: url) do |faraday|
         faraday.adapter Faraday.default_adapter
         faraday.headers['Content-Type'] = 'application/json'
         faraday.headers['User-Agent'] = "#{Datatrans::NAME}/#{Datatrans::VERSION}"
         faraday.basic_auth(@merchant_id, @merchant_password)
+
         headers.map { |key, value| faraday.headers[key] = value }
       end
     end

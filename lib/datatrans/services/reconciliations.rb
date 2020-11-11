@@ -6,7 +6,7 @@ module Datatrans
     class Reconciliations < BaseService
       private
 
-      # @return [Array<Hash>] methods Array of actions and verbs used for requests
+      # @return [Array<Hash>] An array of actions and verbs used for requests
       def service_methods
         [{ name: :sales, verb: :post }, { name: :sales_bulk, verb: :post }]
       end

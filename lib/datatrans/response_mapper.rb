@@ -7,31 +7,31 @@ module Datatrans
   # Model wraps the Datatrans Response Mapper
   class ResponseMapper
     ERRORS = [
-      { name: :bad_request,          status: 400 }, { name: :unauthorized, status: 401 },
-      { name: :permission,           status: 403 }, { name: :not_found,    status: 404 },
-      { name: :unprocessable_entity, status: 422 }, { name: :server,       status: 500 },
-      { name: :configuration,        status: 905 }
+      { name: :bad_request,  status: 400 }, { name: :unprocessable_entity, status: 422 },
+      { name: :unauthorized, status: 401 }, { name: :server,               status: 500 },
+      { name: :permission,   status: 403 }, { name: :configuration,        status: 905 },
+      { name: :not_found,    status: 404 }
     ].freeze
 
     class << self
-      # @param [Faraday::Response] response
       # @param [Hash] payload The payload that was sent
-      # @return [Datatrans::Result|Datatrans::Error] The result of the Response Mapper
-      def build(response, payload)
-        new(response, payload).build
+      # @param [Faraday::Response] response
+      # @return [Datatrans::Result|Datatrans::DatatransError] The result of the Response Mapper
+      def build(payload, response)
+        new(payload, response).build
       end
     end
 
-    # @param [Faraday::Response] response
     # @param [Hash] payload The payload that was sent
-    # @return [Datatrans::ResponseMapper] The new instance
-    def initialize(response, payload)
-      @response = response
+    # @param [Faraday::Response] response
+    # @return [Datatrans::ResponseMapper] A new instance
+    def initialize(payload, response)
       @payload = payload
+      @response = response
     end
 
     # rubocop:disable Metrics/AbcSize
-    # @return [Datatrans::Result|Datatrans::Error] The result of the Response Mapper
+    # @return [Datatrans::Result|Datatrans::DatatransError] The result of the Response Mapper
     def build
       if [200, 201, 204].include? @response.status
         return Result.new(headers: @response.headers, response: @response.body, status: @response.status)

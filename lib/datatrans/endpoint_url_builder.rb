@@ -6,15 +6,15 @@ module Datatrans
   # Model wraps the Datatrans Endpoint Url Builder
   class EndpointUrlBuilder
     class << self
-      # @param [Hash] args
+      # @param [Hash] args The attributes to create the url
       # @return [String] The result of the Endpoint Url Builder
       def build(**args)
         new(args).build
       end
     end
 
-    # @param [Hash] args
-    # @return [Datatrans::EndpointUrlBuilder] The new instance
+    # @param [Hash] args The attributes to create the url
+    # @return [Datatrans::EndpointUrlBuilder] A new instance
     def initialize(args)
       @action = args[:action]
       @env_subdomain = args[:env] == :live ? '' : '.sandbox'
@@ -28,8 +28,7 @@ module Datatrans
 
     # @return [String] The result of the Endpoint Url Builder
     def build
-      path_string = path.nil? ? '' : "/#{path}"
-      "#{endpoint_url_base}/#{@service == 'HealthCheck' ? @action : "v#{@version}/#{@service.downcase}#{path_string}"}"
+      "#{base_uri}#{path.nil? ? '' : "/#{path}"}"
     end
 
     private
@@ -37,8 +36,30 @@ module Datatrans
     # @return [Boolean] Boolean method that checks if id is required in the path
     def action_requires_id?
       %w[Aliases Transactions].include?(@service) &&
-        %i[authorize_with_transaction cancel credit_with_transaction delete
-           status settle update_amount].include?(@action)
+        %i[authorize_with_transaction cancel credit_with_transaction delete status settle
+           update_amount].include?(@action)
+    end
+
+    # @return [String] The base URI
+    def base_uri
+      "#{domain}/#{resource_name}"
+    end
+
+    # @return [String] The domain
+    def domain
+      "https://api#{@env_subdomain}.datatrans.com"
+    end
+
+    # @return [String] The resource name
+    def resource_name
+      case @service
+      when 'HealthCheck'
+        'upp'
+      when 'Aliases', 'Reconciliations', 'Transactions'
+        "v#{@version}/#{@service.downcase}"
+      else
+        raise ArgumentError, "Invalid service specified: '#{@service}'"
+      end
     end
 
     # path_with_special_camelcase?
@@ -75,18 +96,14 @@ module Datatrans
 
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/MethodLength
-    # @return [Array<Hash>] Array of name, condition, and value used for building the paths
+    # @return [Array<Hash>] An array of name, condition, and value used for building the paths
     def helper_methods
       [
         {
-          name: :special_camelcase,
-          condition: @service == 'Transactions' && @action == :secure_fields,
-          value: @action.to_s.gsub(/_./) { |x| x[1].upcase }.to_s
-        },
-        {
-          name: :splitting,
-          condition: @service == 'Reconciliations' && @action == :sales_bulk,
-          value: "#{@action.to_s.split('_').first}/#{@action.to_s.split('_').last}"
+          name: :collection_only,
+          condition: %w[HealthCheck Reconciliations Transactions].include?(@service) &&
+            %i[authorize check credit sales validate].include?(@action),
+          value: @action
         },
         {
           name: :custom_member,
@@ -100,27 +117,19 @@ module Datatrans
           value: @id
         },
         {
-          name: :collection_only,
-          condition: %w[Reconciliations Transactions].include?(@service) &&
-            %i[authorize credit sales validate].include?(@action),
-          value: @action
+          name: :special_camelcase,
+          condition: @service == 'Transactions' && @action == :secure_fields,
+          value: @action.to_s.gsub(/_./) { |x| x[1].upcase }.to_s
+        },
+        {
+          name: :splitting,
+          condition: @service == 'Reconciliations' && @action == :sales_bulk,
+          value: "#{@action.to_s.split('_').first}/#{@action.to_s.split('_').last}"
         }
       ]
     end
     # rubocop:enable Metrics/AbcSize
     # rubocop:enable Metrics/MethodLength
-
-    # @return [String] The base endpoint Url
-    def endpoint_url_base
-      case @service
-      when 'HealthCheck'
-        "https://api#{@env_subdomain}.datatrans.com/upp"
-      when 'Aliases', 'Reconciliations', 'Transactions'
-        "https://api#{@env_subdomain}.datatrans.com"
-      else
-        raise ArgumentError, "Invalid service specified: '#{@service}'"
-      end
-    end
 
     # @return [String|NilClass] The endpoint's path
     def path

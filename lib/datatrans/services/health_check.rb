@@ -6,7 +6,7 @@ module Datatrans
     class HealthCheck < BaseService
       private
 
-      # @return [Array<Hash>] methods Array of actions and verbs used for requests
+      # @return [Array<Hash>] An array of actions and verbs used for requests
       def service_methods
         [{ name: :check, verb: :get }]
       end
