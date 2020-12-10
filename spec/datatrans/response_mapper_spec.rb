@@ -13,7 +13,7 @@ RSpec.describe Datatrans::ResponseMapper do
     )
   end
 
-  Datatrans::ResponseMapper::ERRORS.each do |error|
+  Datatrans::DatatransError::ERRORS.each do |error|
     let(":response_#{error[:name]}") do
       OpenStruct.new(
         headers: '"server": "nginx", "content-type": "application/json", "content-length": "44"',
@@ -28,7 +28,7 @@ RSpec.describe Datatrans::ResponseMapper do
       expect(described_class.build({}, created_response)).to be_a(Datatrans::Result)
     end
 
-    Datatrans::ResponseMapper::ERRORS.each do |error|
+    Datatrans::DatatransError::ERRORS.each do |error|
       it "returns a Datatrans::#{error[:name].to_s.classify}Error" do
         response = send(":response_#{error[:name]}")
         expect(described_class.build({}, response)).to be_a("Datatrans::#{error[:name].to_s.classify}Error".constantize)

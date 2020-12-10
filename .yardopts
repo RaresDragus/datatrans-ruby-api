@@ -1,0 +1,7 @@
+--private
+--protected
+--markup-provider redcarpet
+--markup markdown
+--output-dir docs/
+--title "DataTrans Ruby Client"
+lib/**/*.rb

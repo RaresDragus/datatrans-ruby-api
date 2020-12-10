@@ -15,9 +15,9 @@ module Datatrans
   class Result
     attr_reader :headers, :response, :status
 
-    # @param [String] headers The headers received from Faraday::Response
-    # @param [String|NilClass] response The body received from Faraday::Response
-    # @param [Integer|NilClass] status The status code received from Faraday::Response
+    # @param headers [String] The headers received from Faraday::Response
+    # @param response [String|NilClass] The body received from Faraday::Response
+    # @param status [Integer|NilClass] The status code received from Faraday::Response
     # @return [Datatrans::Result] A new instance
     def initialize(headers:, response:, status:)
       @headers = ActiveSupport::HashWithIndifferentAccess.new(JSON.parse(headers.to_json))

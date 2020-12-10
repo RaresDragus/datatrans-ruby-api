@@ -6,12 +6,19 @@ require 'json'
 
 module Datatrans
   # Model wraps the Datatrans Client
+  #
+  # @!attribute [rw] env
+  #   @return [Symbol] The environment (live or test)
+  # @!attribute [rw] merchant_id
+  #   @return [String] The merchant id
+  # @!attribute [rw] merchant_password
+  #   @return [String] The merchant password
   class Client
     attr_accessor :env, :merchant_id, :merchant_password
 
-    # @param [Symbol] env The environment (live or test)
-    # @param [String] merchant_id The merchant id
-    # @param [String] merchant_password The merchant password
+    # @param env [Symbol] The environment (live or test)
+    # @param merchant_id [String] The merchant id
+    # @param merchant_password [String] The merchant password
     # @return [Datatrans::Client] A new instance
     def initialize(env: :live, merchant_id: nil, merchant_password: nil)
       raise ArgumentError, "Invalid env specified: '#{env}'" unless %i[live test].include?(env)
@@ -21,7 +28,7 @@ module Datatrans
       @merchant_password = merchant_password
     end
 
-    # @param [Hash] args The attributes for the new request
+    # @param args [Hash] The attributes for the new request
     # @return [Datatrans::Result|Datatrans::DatatransError] The result of the request
     def send_request(**args)
       ResponseMapper.build(
@@ -34,14 +41,14 @@ module Datatrans
       )
     end
 
-    # aliases
-    # @return [Datatrans::Services::Aliases] A new Aliases Service instance
-    # health_check
-    # @return [Datatrans::Services::HealthCheck] A new Health Check Service instance
-    # reconciliations
-    # @return [Datatrans::Services::Reconciliations] A new Reconciliations Service instance
-    # transactions
-    # @return [Datatrans::Services::Transactions] A new Transactions Service instance
+    # @!method aliases
+    #   @return [Datatrans::Services::Aliases] A new Aliases Service instance
+    # @!method health_check
+    #   @return [Datatrans::Services::HealthCheck] A new Health Check Service instance
+    # @!method reconciliations
+    #   @return [Datatrans::Services::Reconciliations] A new Reconciliations Service instance
+    # @!method transactions
+    #   @return [Datatrans::Services::Transactions] A new Transactions Service instance
     %i[aliases health_check reconciliations transactions].each do |method|
       define_method method do
         instance_variable_set(
@@ -52,8 +59,8 @@ module Datatrans
 
     private
 
-    # @param [Hash] args The attributes for the new request
-    # @param [String] url The url for the new request
+    # @param args [Hash] The attributes for the new request
+    # @param url [String]The url for the new request
     # @return [Array<Hash, Faraday::Response>] The payload which was sent and the response
     def call(args, url)
       request = args[:request]
@@ -67,8 +74,8 @@ module Datatrans
       [request_data, response]
     end
 
-    # @param [Hash] headers The headers for the new connection
-    # @param [String] url The url for the new connection
+    # @param headers [Hash] The headers for the new connection
+    # @param url [String] The url for the new connection
     # @return [Faraday] A new Faraday instance
     def connection(headers, url)
       Faraday.new(url: url) do |faraday|

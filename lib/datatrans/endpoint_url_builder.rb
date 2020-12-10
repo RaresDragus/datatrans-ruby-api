@@ -7,6 +7,10 @@ module Datatrans
   class EndpointUrlBuilder
     class << self
       # @param [Hash] args The attributes to create the url
+      # @option args [Symbol] :action The action used for the Url
+      # @option args [Symbol] :env The environment used for the Url
+      # @option args [String] :service The service used for the Url
+      # @option args [Integer] :version The version used for the Url
       # @return [String] The result of the Endpoint Url Builder
       def build(**args)
         new(args).build
@@ -14,6 +18,10 @@ module Datatrans
     end
 
     # @param [Hash] args The attributes to create the url
+    # @option args [Symbol] :action The action used for the Url
+    # @option args [Symbol] :env The environment used for the Url
+    # @option args [String] :service The service used for the Url
+    # @option args [Integer] :version The version used for the Url
     # @return [Datatrans::EndpointUrlBuilder] A new instance
     def initialize(args)
       @action = args[:action]
@@ -62,26 +70,27 @@ module Datatrans
       end
     end
 
-    # path_with_special_camelcase?
-    # @return [Boolean] Boolean method that checks if the path requires a special camelcase
-    # path_with_special_camelcase
-    # @return [String] The path with special camelcase (eg. secure_fields => secureFields)
-    # path_with_splitting?
-    # @return [Boolean] Boolean method that checks if the path requires splitting
-    # path_with_splitting
-    # @return [String] The path with splitting (eg. sales_bulk => sales/bulk)
-    # path_with_custom_member?
-    # @return [Boolean] Boolean method that checks if the path requires custom member
-    # path_with_custom_member
-    # @return [String] The path with custom member (eg. credit_with_transaction => {transactionId}/credit)
-    # path_with_member_only?
-    # @return [Boolean] Boolean method that checks if the path requires member only
-    # path_with_member_only
-    # @return [String] The path with member only (eg. status => {transactionId})
-    # path_with_collection_only?
-    # @return [Boolean] Boolean method that checks if the path requires collection only
-    # path_with_collection_only
-    # @return [String] The path with collection only (eg. authorize => authorize)
+    # @!method path_with_special_camelcase?
+    #   @return [Boolean] Boolean method that checks if the path requires a special camelcase
+    # @!method path_with_special_camelcase
+    #  @return [String] The path with special camelcase (eg. secure_fields => secureFields)
+    # @!method path_with_splitting?
+    #   @return [Boolean] Boolean method that checks if the path requires splitting
+    # @!method path_with_splitting
+    #   @return [String] The path with splitting (eg. sales_bulk => sales/bulk)
+    # @!method path_with_custom_member?
+    #   @return [Boolean] Boolean method that checks if the path requires custom member
+    # @!method path_with_custom_member
+    #   @return [String] The path with custom member (eg. credit_with_transaction => :transactionId/credit)
+    # @!method path_with_member_only?
+    #   @return [Boolean] Boolean method that checks if the path requires member only
+    # @!method path_with_member_only
+    #   @return [String] The path with member only (eg. status => :transactionId)
+    # @!method path_with_collection_only?
+    #   @return [Boolean] Boolean method that checks if the path requires collection only
+    # @!method path_with_collection_only
+    #   @return [String] The path with collection only (eg. authorize => authorize)
+    # Defines the `path_with_*` methods
     def define_helpers
       helper_methods.each do |method|
         define_singleton_method ":path_with_#{method[:name]}?" do
@@ -96,6 +105,7 @@ module Datatrans
 
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/MethodLength
+
     # @return [Array<Hash>] An array of name, condition, and value used for building the paths
     def helper_methods
       [

@@ -14,11 +14,18 @@ module Datatrans
   # @!attribute [r] status
   #   @return [Integer] The status code of the response
   class DatatransError
+    ERRORS = [
+      { name: :bad_request,  status: 400 }, { name: :unprocessable_entity, status: 422 },
+      { name: :unauthorized, status: 401 }, { name: :server,               status: 500 },
+      { name: :permission,   status: 403 }, { name: :configuration,        status: 905 },
+      { name: :not_found,    status: 404 }
+    ].freeze
+
     attr_reader :code, :message, :request, :status
 
-    # @param [Hash] request The payload used for the request
-    # @param [String] response The body received from Datatrans response
-    # @param [Integer] status The status code of the response
+    # @param request [Hash] The payload used for the request
+    # @param response [String] The body received from Datatrans response
+    # @param status [Integer] The status code of the response
     def initialize(request:, response:, status:)
       parsed_response = ActiveSupport::HashWithIndifferentAccess.new(JSON.parse(response))
       @code = parsed_response.dig(:error, :code)
@@ -26,28 +33,19 @@ module Datatrans
       @request = request
       @status = status
     end
+
+    # @abstract class BadRequestError < DatatransError
+    # @abstract class UnauthorizedError < DatatransError
+    # @abstract class PermissionError < DatatransError
+    # @abstract class NotFoundError < DatatransError
+    # @abstract class UnprocessableEntityError < DatatransError
+    # @abstract class ServerError < DatatransError
+    # @abstract class ConfigurationError < DatatransError
+    # dynamically defines the error subclasses
+    ERRORS.map { |error| error[:name] }.each do |name|
+      Datatrans.const_set "#{name.to_s.classify}Error", Class.new(self)
+    end
   end
-
-  # Model wraps the bad request errors
-  class BadRequestError < DatatransError; end
-
-  # Model wraps the authentication errors
-  class UnauthorizedError < DatatransError; end
-
-  # Model wraps the permission errors
-  class PermissionError < DatatransError; end
-
-  # Model wraps the not found errors
-  class NotFoundError < DatatransError; end
-
-  # Model wraps the format errors
-  class UnprocessableEntityError < DatatransError; end
-
-  # Model wraps the server errors
-  class ServerError < DatatransError; end
-
-  # Model wraps the configuration errors
-  class ConfigurationError < DatatransError; end
 
   # Model wraps the generic api errors
   class ApiError < DatatransError; end
